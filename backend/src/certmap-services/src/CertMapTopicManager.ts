@@ -6,7 +6,7 @@ import docs from './docs/CertMapTopicManagerDocs.md.js'
  * Implements a topic manager for CertMap name registry
  * @public
  */
-export class CertMapTopicManager implements TopicManager {
+export default class CertMapTopicManager implements TopicManager {
   /**
    * Returns the outputs from the CertMap transaction that are admissible.
    * @param beef - The transaction data in BEEF format

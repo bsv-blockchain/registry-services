@@ -11,11 +11,11 @@
       "serviceFactory": "./backend/src/basketmap-services/src/BasketMapLookupServiceFactory.ts",
       "hydrateWith": "mongo"
     },
-     "ls_certmap": {
+    "ls_certmap": {
       "serviceFactory": "./backend/src/certmap-services/src/CertMapLookupServiceFactory.ts",
       "hydrateWith": "mongo"
     },
-     "ls_protomap": {
+    "ls_protomap": {
       "serviceFactory": "./backend/src/protomap-services/src/ProtoMapLookupServiceFactory.ts",
       "hydrateWith": "mongo"
     }
@@ -34,7 +34,7 @@
       "name": "Babbage",
       "provider": "CARS",
       "CARSCloudURL": "https://cars.babbage.systems",
-      "projectID": "",
+      "projectID": "f814347ab6bf690f53148d3277ac5c18",
       "network": "mainnet",
       "deploy": [
         "backend"

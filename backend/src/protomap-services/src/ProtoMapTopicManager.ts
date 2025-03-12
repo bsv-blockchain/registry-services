@@ -6,7 +6,7 @@ import docs from './docs/ProtoMapTopicManagerDocs.md.js'
  * Implements a topic manager for ProtoMap name registry
  * @public
  */
-export class ProtoMapTopicManager implements TopicManager {
+export default class ProtoMapTopicManager implements TopicManager {
   /**
    * Returns the outputs from the ProtoMap transaction that are admissible.
    * @param beef - The transaction data in BEEF format

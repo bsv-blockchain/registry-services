@@ -6,7 +6,7 @@ import docs from './docs/BasketMapTopicManagerDocs.md.js'
  * Implements a topic manager for BasketMap name registry
  * @public
  */
-export class BasketMapTopicManager implements TopicManager {
+export default class BasketMapTopicManager implements TopicManager {
   /**
    * Returns the outputs from the BasketMap transaction that are admissible.
    * @param beef - The transaction data in BEEF format
