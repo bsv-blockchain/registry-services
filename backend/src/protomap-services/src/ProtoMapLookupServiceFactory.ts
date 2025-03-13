@@ -1,6 +1,6 @@
 import { ProtoMapStorageManager } from './ProtoMapStorageManager.js'
 import { LookupAnswer, LookupFormula, LookupQuestion, LookupService } from '@bsv/overlay'
-import { PushDrop, Script } from '@bsv/sdk'
+import { PushDrop, Script, Utils } from '@bsv/sdk'
 import { ProtoMapRegistration } from './interfaces/ProtoMapTypes.js'
 import docs from './docs/ProtoMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
@@ -42,10 +42,10 @@ class ProtoMapLookupService implements LookupService {
     const { fields } = PushDrop.decode(outputScript)
 
     // Parse record data correctly from field and validate it
-    const securityLevel = fields[0].toString()
-    const protocolID = fields[1].toString()
-    const name = fields[2].toString()
-    const registryOperator = fields[6].toString()
+    const securityLevel = Utils.toUTF8(fields[0])
+    const protocolID = Utils.toUTF8(fields[1])
+    const name = Utils.toUTF8(fields[2])
+    const registryOperator = Utils.toUTF8(fields[6])
 
     const registration: ProtoMapRegistration = {
       registryOperator,

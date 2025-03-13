@@ -1,6 +1,6 @@
 import { CertMapStorageManager } from './CertMapStorageManager.js'
 import { LookupAnswer, LookupFormula, LookupQuestion, LookupService } from '@bsv/overlay'
-import { PushDrop, Script } from '@bsv/sdk'
+import { PushDrop, Script, Utils } from '@bsv/sdk'
 import { CertMapRegistration } from './interfaces/CertMapTypes.js'
 import docs from './docs/CertMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
@@ -41,9 +41,9 @@ class CertMapLookupService implements LookupService {
     const { fields } = PushDrop.decode(outputScript)
 
     // Parse record data correctly from field and validate it
-    const type = fields[0].toString()
-    const name = fields[1].toString()
-    const registryOperator = fields[6].toString()
+    const type = Utils.toUTF8(fields[0])
+    const name = Utils.toUTF8(fields[1])
+    const registryOperator = Utils.toUTF8(fields[6])
 
     const registration: CertMapRegistration = {
       type,
@@ -97,16 +97,16 @@ class CertMapLookupService implements LookupService {
         questionToAnswer.type,
         questionToAnswer.registryOperators
       )
-      return results
     } else if (questionToAnswer.name !== undefined && questionToAnswer.registryOperators !== undefined) {
       results = await this.storageEngine.findByName(
         questionToAnswer.name,
         questionToAnswer.registryOperators
       )
-      return results
     } else {
       throw new Error('type, name, and registryOperator must be valid params')
     }
+
+    return results
   }
 
   /**

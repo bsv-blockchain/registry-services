@@ -52,7 +52,7 @@ export class BasketMapStorageManager {
   * @param registryOperator
   * @returns
   */
-  async findById(basketID: string, registryOperators: string[]): Promise<object> {
+  async findById(basketID: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Find matching results from the DB
     return await this.findRecordWithQuery({
       'registration.basketID': basketID,
@@ -67,7 +67,7 @@ export class BasketMapStorageManager {
   * @param {string} registryOperator - operator of the basket registration
   * @returns
   */
-  async findByName(name: string, registryOperators: string[]): Promise<object> {
+  async findByName(name: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Construct a dynamic query for basket by name with fuzzy search support
     const query = {
       $and: [

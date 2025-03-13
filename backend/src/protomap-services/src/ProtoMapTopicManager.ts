@@ -72,7 +72,7 @@ export default class ProtoMapTopicManager implements TopicManager {
           )
 
           // Make sure keys match
-          if (expected !== lockingPublicKey) throw new Error('ProtMap token not linked to registry operator!')
+          if (expected.toString() !== lockingPublicKey.toString()) throw new Error('ProtMap token not linked to registry operator!')
 
           // Verify the signature
           const signature = fields.pop() as number[]
@@ -84,7 +84,7 @@ export default class ProtoMapTopicManager implements TopicManager {
             data,
             signature,
             counterparty: registryOperator,
-            protocolID: [1, 'identity'],
+            protocolID: [1, 'protomap'],
             keyID: '1'
           })
           if (!hasValidSignature) throw new Error('Invalid signature!')

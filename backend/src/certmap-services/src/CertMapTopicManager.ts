@@ -1,5 +1,5 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction } from '@bsv/sdk'
+import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction, Utils } from '@bsv/sdk'
 import docs from './docs/CertMapTopicManagerDocs.md.js'
 
 /**
@@ -32,13 +32,13 @@ export default class CertMapTopicManager implements TopicManager {
           const { fields, lockingPublicKey } = PushDrop.decode(output.lockingScript)
 
           // Parse and validate certificate type registration data
-          const type = fields[0].toString()
-          const name = fields[1].toString()
-          const iconURL = fields[2].toString()
-          const description = fields[3].toString()
-          const documentationURL = fields[4].toString()
-          const certFields = JSON.parse(fields[5].toString())
-          const registryOperator = fields[6].toString()
+          const type = Utils.toUTF8(fields[0])
+          const name = Utils.toUTF8(fields[1])
+          const iconURL = Utils.toUTF8(fields[2])
+          const description = Utils.toUTF8(fields[3])
+          const documentationURL = Utils.toUTF8(fields[4])
+          const certFields = JSON.parse(Utils.toUTF8(fields[5]))
+          const registryOperator = Utils.toUTF8(fields[6])
 
           if (typeof type !== 'string') throw new Error('type must be valid')
           if (typeof name !== 'string') throw new Error('name must be valid')
@@ -57,7 +57,7 @@ export default class CertMapTopicManager implements TopicManager {
           )
 
           // Make sure keys match
-          if (expected !== lockingPublicKey) throw new Error('CertMap token not linked to registry operator!')
+          if (expected.toString() !== lockingPublicKey.toString()) throw new Error('CertMap token not linked to registry operator!')
 
           const signature = fields.pop() as number[]
           const data = fields.reduce((a, e) => [...a, ...e], [])
@@ -68,7 +68,7 @@ export default class CertMapTopicManager implements TopicManager {
             data,
             signature,
             counterparty: registryOperator,
-            protocolID: [1, 'identity'],
+            protocolID: [1, 'certmap'],
             keyID: '1'
           })
           if (!hasValidSignature) throw new Error('Invalid signature!')
@@ -85,6 +85,7 @@ export default class CertMapTopicManager implements TopicManager {
 
       // Returns an array of outputs admitted
       // And previousOutputsRetained (none by default)
+      console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
       return {
         outputsToAdmit,
         coinsToRetain: []
@@ -95,6 +96,8 @@ export default class CertMapTopicManager implements TopicManager {
         console.error('Error identifying admissible outputs:', error)
       }
     }
+
+    console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
 
     return {
       outputsToAdmit,

@@ -52,7 +52,7 @@ export class CertMapStorageManager {
   * @param registryOperator
   * @returns
   */
-  async findByType(type: string, registryOperators: string[]): Promise<object> {
+  async findByType(type: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Find matching results from the DB
     return await this.findRecordWithQuery({
       'registration.type': type,
@@ -67,7 +67,7 @@ export class CertMapStorageManager {
   * @param {string} registryOperator - operator of the certificate registration
   * @returns
   */
-  async findByName(name: string, registryOperators: string[]): Promise<object> {
+  async findByName(name: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Construct a dynamic query for certificate by name with fuzzy search support
     const query = {
       $and: [

@@ -1,6 +1,6 @@
 import { BasketMapStorageManager } from './BasketMapStorageManager.js'
 import { LookupAnswer, LookupFormula, LookupQuestion, LookupService } from '@bsv/overlay'
-import { Script, PushDrop } from '@bsv/sdk'
+import { Script, PushDrop, Utils } from '@bsv/sdk'
 import { BasketMapQuery, BasketMapRegistration } from './interfaces/BasketMapTypes.js'
 import docs from './docs/BasketMapLookupDocs.md.js'
 import { Db } from 'mongodb'
@@ -32,9 +32,9 @@ class BasketMapLookupService implements LookupService {
     const { fields } = PushDrop.decode(outputScript)
 
     // Parse record data correctly from field and validate it
-    const basketID = fields[0].toString()
-    const name = fields[1].toString()
-    const registryOperator = fields[5].toString()
+    const basketID = Utils.toUTF8(fields[0])
+    const name = Utils.toUTF8(fields[1])
+    const registryOperator = Utils.toUTF8(fields[5])
 
     const registration: BasketMapRegistration = {
       basketID,

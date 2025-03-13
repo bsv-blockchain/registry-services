@@ -62,7 +62,7 @@ export default class BasketMapTopicManager implements TopicManager {
           }
 
           // Ensure lockingPublicKey came from fields[0]
-          // Either the certifier or the subject must control the Identity token.
+          // Either the certifier or the subject must control the basket token.
           const keyDeriver = new KeyDeriver('anyone')
           const expected = keyDeriver.derivePublicKey(
             [1, 'basketmap'],
@@ -71,7 +71,7 @@ export default class BasketMapTopicManager implements TopicManager {
           )
 
           // Make sure keys match
-          if (expected !== lockingPublicKey) {
+          if (expected.toString() !== lockingPublicKey.toString()) {
             throw new Error('BasketMap token not linked registry operator!')
           }
 
@@ -85,7 +85,7 @@ export default class BasketMapTopicManager implements TopicManager {
             data,
             signature,
             counterparty: registryOperator,
-            protocolID: [1, 'identity'],
+            protocolID: [1, 'basketmap'],
             keyID: '1'
           })
           if (!hasValidSignature) throw new Error('Invalid signature!')

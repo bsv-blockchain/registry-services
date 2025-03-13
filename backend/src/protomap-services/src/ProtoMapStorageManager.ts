@@ -52,7 +52,7 @@ export class ProtoMapStorageManager {
    * @param registryOperator
    * @returns
    */
-  async findByName(name: string, registryOperators: string[]): Promise<object> {
+  async findByName(name: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Find matching results from the DB
     return await this.findRecordWithQuery({
       'registration.registryOperator': { $in: registryOperators },
@@ -68,7 +68,7 @@ export class ProtoMapStorageManager {
   * @param registryOperators
   * @returns
   */
-  async findByProtocolIDAndSecurityLevel(protocolID: string, securityLevel: number, registryOperators: string[]): Promise<object> {
+  async findByProtocolIDAndSecurityLevel(protocolID: string, securityLevel: number, registryOperators: string[]): Promise<UTXOReference[]> {
     // Find matching results from the DB
     return await this.findRecordWithQuery({
       'registration.protocolID': protocolID,
