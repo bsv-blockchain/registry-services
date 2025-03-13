@@ -1,5 +1,5 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import { KeyDeriver, PushDrop, Signature, Transaction } from '@bsv/sdk'
+import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction } from '@bsv/sdk'
 import docs from './docs/BasketMapTopicManagerDocs.md.js'
 
 /**
@@ -76,10 +76,18 @@ export default class BasketMapTopicManager implements TopicManager {
           }
 
           // Verify the signature
-          const hasValidSignature = lockingPublicKey.verify(
-            fields.flatMap(field => Array.from(field)),
-            Signature.fromDER(fields[-1], 'hex')
-          )
+          const signature = fields.pop() as number[]
+          const data = fields.reduce((a, e) => [...a, ...e], [])
+
+          // Verify the signature
+          const anyoneWallet = new ProtoWallet('anyone')
+          const { valid: hasValidSignature } = await anyoneWallet.verifySignature({
+            data,
+            signature,
+            counterparty: registryOperator,
+            protocolID: [1, 'identity'],
+            keyID: '1'
+          })
           if (!hasValidSignature) throw new Error('Invalid signature!')
 
           outputsToAdmit.push(i)
