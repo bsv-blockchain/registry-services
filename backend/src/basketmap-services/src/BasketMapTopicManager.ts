@@ -1,5 +1,5 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction } from '@bsv/sdk'
+import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction, Utils } from '@bsv/sdk'
 import docs from './docs/BasketMapTopicManagerDocs.md.js'
 
 /**
@@ -33,12 +33,12 @@ export default class BasketMapTopicManager implements TopicManager {
           const { lockingPublicKey, fields } = PushDrop.decode(output.lockingScript)
 
           //  Parse and validate basket type registration data
-          const basketID = fields[0].toString()
-          const name = fields[1].toString()
-          const iconURL = fields[2].toString()
-          const description = fields[3].toString()
-          const documentationURL = fields[4].toString()
-          const registryOperator = fields[5].toString()
+          const basketID = Utils.toUTF8(fields[0])
+          const name = Utils.toUTF8(fields[1])
+          const iconURL = Utils.toUTF8(fields[2])
+          const description = Utils.toUTF8(fields[3])
+          const documentationURL = Utils.toUTF8(fields[4])
+          const registryOperator = Utils.toUTF8(fields[5])
 
           if (basketID === undefined || typeof basketID !== 'string') {
             throw new Error('basketID param missing!')
@@ -92,6 +92,7 @@ export default class BasketMapTopicManager implements TopicManager {
 
           outputsToAdmit.push(i)
         } catch (error) {
+          console.error('ERROR', error)
           // It's common for other outputs to be invalid; no need to log an error here
           continue
         }
@@ -102,6 +103,7 @@ export default class BasketMapTopicManager implements TopicManager {
 
       // Returns an array of outputs admitted
       // And previousOutputsRetained (none by default)
+      console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
       return {
         outputsToAdmit,
         coinsToRetain: []
@@ -113,6 +115,7 @@ export default class BasketMapTopicManager implements TopicManager {
       }
     }
 
+    console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
     return {
       outputsToAdmit,
       coinsToRetain: []

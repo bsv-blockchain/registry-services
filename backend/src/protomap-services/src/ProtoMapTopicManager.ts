@@ -1,5 +1,5 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction } from '@bsv/sdk'
+import { KeyDeriver, ProtocolString5To400Bytes, ProtoWallet, PushDrop, SecurityLevel, Signature, Transaction, Utils, WalletProtocol } from '@bsv/sdk'
 import docs from './docs/ProtoMapTopicManagerDocs.md.js'
 
 /**
@@ -33,18 +33,17 @@ export default class ProtoMapTopicManager implements TopicManager {
           const { fields, lockingPublicKey } = PushDrop.decode(output.lockingScript)
 
           // Parse and validate protocol registration data
-          const securityLevel = fields[0].toString()
-          const protocolID = fields[1].toString()
-          const name = fields[2].toString()
-          const iconURL = fields[3].toString()
-          const description = fields[4].toString()
-          const documentationURL = fields[5].toString()
-          const registryOperator = fields[6].toString()
+          const protocolID = deserializeWalletProtocol(Utils.toUTF8(fields[0]))
+          const name = Utils.toUTF8(fields[1])
+          const iconURL = Utils.toUTF8(fields[2])
+          const description = Utils.toUTF8(fields[3])
+          const documentationURL = Utils.toUTF8(fields[4])
+          const registryOperator = Utils.toUTF8(fields[5])
 
-          if (securityLevel !== '0' && securityLevel !== '1' && securityLevel !== '2') {
-            throw new Error('Invalid security level')
-          }
-          if (protocolID === undefined || typeof protocolID !== 'string') {
+          if (
+            protocolID === undefined || typeof protocolID[1] !== 'string'
+            || (protocolID[0] !== 0 && protocolID[0] !== 1 && protocolID[0] !== 2)
+          ) {
             throw new Error('Invalid protocol ID')
           }
           if (name === undefined || typeof name !== 'string') {
@@ -91,6 +90,7 @@ export default class ProtoMapTopicManager implements TopicManager {
 
           outputsToAdmit.push(i)
         } catch (error) {
+          console.log('ERROR', error)
           // It's common for other outputs to be invalid; no need to log an error here
           continue
         }
@@ -143,4 +143,28 @@ export default class ProtoMapTopicManager implements TopicManager {
       shortDescription: 'Protocol information registration'
     }
   }
+}
+
+export function deserializeWalletProtocol(str: string): WalletProtocol {
+  // Parse the JSON string back into a JavaScript value.
+  const parsed = JSON.parse(str)
+
+  // Validate that the parsed value is an array with exactly two elements.
+  if (!Array.isArray(parsed) || parsed.length !== 2) {
+    throw new Error("Invalid wallet protocol format.")
+  }
+
+  const [security, protocolString] = parsed
+
+  // Validate that the security level is one of the allowed numbers.
+  if (![0, 1, 2].includes(security)) {
+    throw new Error("Invalid security level.")
+  }
+
+  // Validate that the protocol string is a string and its length is within the allowed bounds.
+  if (typeof protocolString !== "string") {
+    throw new Error("Invalid protocolID")
+  }
+
+  return [security as SecurityLevel, protocolString as ProtocolString5To400Bytes];
 }

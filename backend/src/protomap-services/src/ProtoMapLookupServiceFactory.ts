@@ -1,15 +1,15 @@
 import { ProtoMapStorageManager } from './ProtoMapStorageManager.js'
 import { LookupAnswer, LookupFormula, LookupQuestion, LookupService } from '@bsv/overlay'
-import { PushDrop, Script, Utils } from '@bsv/sdk'
+import { PushDrop, Script, Utils, WalletProtocol } from '@bsv/sdk'
 import { ProtoMapRegistration } from './interfaces/ProtoMapTypes.js'
 import docs from './docs/ProtoMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
+import { deserializeWalletProtocol } from './ProtoMapTopicManager.js'
 
 interface ProtoMapQuery {
   name?: string
   registryOperators?: string[]
-  protocolID?: string
-  securityLevel?: number
+  protocolID?: WalletProtocol
 }
 
 /**
@@ -42,15 +42,16 @@ class ProtoMapLookupService implements LookupService {
     const { fields } = PushDrop.decode(outputScript)
 
     // Parse record data correctly from field and validate it
-    const securityLevel = Utils.toUTF8(fields[0])
-    const protocolID = Utils.toUTF8(fields[1])
-    const name = Utils.toUTF8(fields[2])
-    const registryOperator = Utils.toUTF8(fields[6])
+    const [securityLevel, protocol] = deserializeWalletProtocol(Utils.toUTF8(fields[0]))
+    const name = Utils.toUTF8(fields[1])
+    const registryOperator = Utils.toUTF8(fields[5])
 
     const registration: ProtoMapRegistration = {
       registryOperator,
-      securityLevel: Number(securityLevel), // Note: consider WalletProtocol compatibility
-      protocolID, // Should this just be a stringified WalletProtocol?
+      protocolID: {
+        securityLevel: Number(securityLevel),
+        protocol
+      },
       name
     }
 
@@ -101,15 +102,14 @@ class ProtoMapLookupService implements LookupService {
         questionToAnswer.registryOperators
       )
       return results
-    } else if (questionToAnswer.protocolID !== undefined && questionToAnswer.securityLevel !== undefined && questionToAnswer.registryOperators !== undefined) {
-      results = await this.storageManager.findByProtocolIDAndSecurityLevel(
+    } else if (questionToAnswer.protocolID && questionToAnswer.registryOperators !== undefined) {
+      results = await this.storageManager.findByProtocolID(
         questionToAnswer.protocolID,
-        questionToAnswer.securityLevel,
         questionToAnswer.registryOperators
       )
       return results
     } else {
-      throw new Error('name, registryOperators, protocolID, or securityLevel must be valid params')
+      throw new Error('name, registryOperators, or protocolID must be valid params')
     }
   }
 

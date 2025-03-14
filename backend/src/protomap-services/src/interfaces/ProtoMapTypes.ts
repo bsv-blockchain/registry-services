@@ -1,7 +1,8 @@
+import { WalletProtocol } from "@bsv/sdk"
+
 export interface ProtoMapLookupQuery {
   registryOperators: string[]
-  securityLevel: number
-  protocolID: string
+  protocolID: WalletProtocol
   name: string
 }
 
@@ -12,8 +13,10 @@ export interface UTXOReference {
 
 export interface ProtoMapRegistration {
   registryOperator: string
-  securityLevel: number
-  protocolID: string
+  protocolID: {
+    securityLevel: number
+    protocol: string
+  }
   name: string
 }
 

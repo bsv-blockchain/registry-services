@@ -1,5 +1,6 @@
 import { Collection, Db } from 'mongodb'
 import { ProtoMapRegistration, ProtoMapRecord, UTXOReference } from './interfaces/ProtoMapTypes.js'
+import { WalletProtocol } from '@bsv/sdk'
 
 /**
  * Implements a Lookup StorageManager for ProtoMap name registry
@@ -61,22 +62,24 @@ export class ProtoMapStorageManager {
   }
 
   /**
-  * Find token by protocolID and securityLevel
+  * Find token by protocolID
   * @public
   * @param protocolID
-  * @param securityLevel
   * @param registryOperators
   * @returns
   */
-  async findByProtocolIDAndSecurityLevel(protocolID: string, securityLevel: number, registryOperators: string[]): Promise<UTXOReference[]> {
-    // Find matching results from the DB
+  async findByProtocolID(
+    protocolID: WalletProtocol,
+    registryOperators: string[]
+  ): Promise<UTXOReference[]> {
+    // Destructure the tuple to get the security level and protocol string.
+    const [securityLevel, protocol] = protocolID
+
+    // Query for matching documents.
     return await this.findRecordWithQuery({
-      'registration.protocolID': protocolID,
-      $or: [
-        { 'registration.securityLevel': securityLevel },
-        { 'registration.securityLevel': securityLevel.toString() }
-      ],
-      'registration.registryOperator': { $in: registryOperators },
+      'registration.protocolID.securityLevel': securityLevel,
+      'registration.protocolID.protocol': protocol,
+      'registration.registryOperator': { $in: registryOperators }
     })
   }
 
