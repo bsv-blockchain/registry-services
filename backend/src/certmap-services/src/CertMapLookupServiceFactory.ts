@@ -1,5 +1,5 @@
 import { CertMapStorageManager } from './CertMapStorageManager.js'
-import { LookupAnswer, LookupFormula, LookupQuestion, LookupService } from '@bsv/overlay'
+import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
 import { PushDrop, Script, Utils } from '@bsv/sdk'
 import { CertMapRegistration } from './interfaces/CertMapTypes.js'
 import docs from './docs/CertMapLookupServiceDocs.md.js'
@@ -16,29 +16,18 @@ interface CertMapQuery {
  * @public
  */
 class CertMapLookupService implements LookupService {
-  /**
-   * Constructs a new CertMap Lookup Service instance
-   * @public
-   * @param storageEngine
-   */
-  constructor(public storageEngine: CertMapStorageManager) { }
+  readonly admissionMode: AdmissionMode = 'locking-script'
+  readonly spendNotificationMode: SpendNotificationMode = 'none'
 
-  /**
-   * Notifies the lookup service of a new output added.
-   *
-   * @param {string} txid - The transaction ID containing the output.
-   * @param {number} outputIndex - The index of the output in the transaction.
-   * @param {Script} outputScript - The script of the output to be processed.
-   * @param {string} topic - The topic associated with the output.
-   *
-   * @returns {Promise<void>} A promise that resolves when the processing is complete.
-   * @throws Will throw an error if there is an issue with storing the record in the storage engine.
-   */
-  async outputAdded(txid: string, outputIndex: number, outputScript: Script, topic: string): Promise<void> {
+  constructor(public storageManager: CertMapStorageManager) { }
+
+  async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
+    if (payload.mode !== 'locking-script') throw new Error('Invalid payload')
+    const { txid, outputIndex, topic, lockingScript } = payload
     if (topic !== 'tm_certmap') return
 
     // Decode the CertMap token fields from the Bitcoin outputScript
-    const { fields } = PushDrop.decode(outputScript)
+    const { fields } = PushDrop.decode(lockingScript)
 
     // Parse record data correctly from field and validate it
     const type = Utils.toUTF8(fields[0])
@@ -52,33 +41,24 @@ class CertMapLookupService implements LookupService {
     }
 
     // Store certificate type registration in the StorageEngine
-    await this.storageEngine.storeRecord(
+    await this.storageManager.storeRecord(
       txid,
       outputIndex,
       registration
     )
   }
 
-  /**
-   * Deletes the output record once the UTXO has been spent
-   *
-   * @param {string} txid - The transaction ID of the spent output.
-   * @param {number} outputIndex - The index of the spent output.
-   * @param {string} topic - The topic associated with the spent output.
-   *
-   * @returns {Promise<void>} A promise that resolves when the processing is complete.
-   * @throws Will throw an error if there is an issue with deleting the record from the storage engine.
-   */
-  async outputSpent(txid: string, outputIndex: number, topic: string): Promise<void> {
+  async outputSpent(payload: OutputSpent): Promise<void> {
+    if (payload.mode !== 'none') throw new Error('Invalid payload')
+    const { topic, txid, outputIndex } = payload
     if (topic !== 'tm_certmap') return
-    await this.storageEngine.deleteRecord(txid, outputIndex)
+    await this.storageManager.deleteRecord(txid, outputIndex)
   }
 
-  /**
-   * Answers a lookup query
-   * @param question - The lookup question to be answered
-   * @returns A promise that resolves to a lookup answer or formula
-   */
+  async outputEvicted(txid: string, outputIndex: number) {
+    await this.storageManager.deleteRecord(txid, outputIndex)
+  }
+
   async lookup(question: LookupQuestion): Promise<LookupAnswer | LookupFormula> {
     // Validate Params
     if (question.query === undefined || question.query === null) {
@@ -93,12 +73,12 @@ class CertMapLookupService implements LookupService {
 
     let results
     if (questionToAnswer.type !== undefined && questionToAnswer.registryOperators !== undefined) {
-      results = await this.storageEngine.findByType(
+      results = await this.storageManager.findByType(
         questionToAnswer.type,
         questionToAnswer.registryOperators
       )
     } else if (questionToAnswer.name !== undefined && questionToAnswer.registryOperators !== undefined) {
-      results = await this.storageEngine.findByName(
+      results = await this.storageManager.findByName(
         questionToAnswer.name,
         questionToAnswer.registryOperators
       )
@@ -109,19 +89,10 @@ class CertMapLookupService implements LookupService {
     return results
   }
 
-  /**
-   * Returns documentation specific to this overlay lookup service
-   * @returns A promise that resolves to the documentation string
-   */
   async getDocumentation(): Promise<string> {
     return docs
   }
 
-  /**
-   * Returns metadata associated with this lookup service
-   * @returns A promise that resolves to an object containing metadata
-   * @throws An error indicating the method is not implemented
-   */
   async getMetaData(): Promise<{
     name: string
     shortDescription: string
