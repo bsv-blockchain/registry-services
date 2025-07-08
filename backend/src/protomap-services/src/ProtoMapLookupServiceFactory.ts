@@ -63,7 +63,7 @@ class ProtoMapLookupService implements LookupService {
     await this.storageManager.deleteRecord(txid, outputIndex)
   }
 
-  async lookup(question: LookupQuestion): Promise<LookupAnswer | LookupFormula> {
+  async lookup(question: LookupQuestion): Promise<LookupFormula> {
     // Validate Params
     if (question.query === undefined || question.query === null) {
       throw new Error('A valid query must be provided!')
