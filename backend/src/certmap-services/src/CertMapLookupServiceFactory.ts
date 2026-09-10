@@ -1,6 +1,6 @@
 import { CertMapStorageManager } from './CertMapStorageManager.js'
 import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
-import { PushDrop, Script, Utils } from '@bsv/sdk'
+import { LockingScript, PushDrop, Script, Utils } from '@bsv/sdk'
 import { CertMapRegistration } from './interfaces/CertMapTypes.js'
 import docs from './docs/CertMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
@@ -27,7 +27,7 @@ class CertMapLookupService implements LookupService {
     if (topic !== 'tm_certmap') return
 
     // Decode the CertMap token fields from the Bitcoin outputScript
-    const { fields } = PushDrop.decode(lockingScript)
+    const { fields } = PushDrop.decode(new LockingScript().writeScript(lockingScript))
 
     // Parse record data correctly from field and validate it
     const type = Utils.toUTF8(fields[0])
