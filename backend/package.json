@@ -7,11 +7,12 @@
   "module": "dist/esm/mod.js",
   "types": "dist/types/mod.d.ts",
   "files": [
+    "NOTICE",
     "dist",
     "src",
     "docs",
     "mod.ts",
-    "LICENSE.txt"
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -47,7 +48,7 @@
     "SV"
   ],
   "author": "BSV Association",
-  "license": "SEE LICENSE IN LICENSE.txt",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/bitcoin-sv/registry-services/issues"
   },
