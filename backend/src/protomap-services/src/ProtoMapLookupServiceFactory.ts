@@ -1,6 +1,6 @@
 import { ProtoMapStorageManager } from './ProtoMapStorageManager.js'
 import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
-import { PushDrop, Utils, WalletProtocol } from '@bsv/sdk'
+import { LockingScript, PushDrop, Utils, WalletProtocol } from '@bsv/sdk'
 import { ProtoMapRegistration } from './interfaces/ProtoMapTypes.js'
 import docs from './docs/ProtoMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
@@ -28,7 +28,7 @@ class ProtoMapLookupService implements LookupService {
     if (topic !== 'tm_protomap') return
 
     // Decode the ProtoMap token fields from the Bitcoin outputScript
-    const { fields } = PushDrop.decode(lockingScript)
+    const { fields } = PushDrop.decode(new LockingScript().writeScript(lockingScript))
 
     // Parse record data correctly from field and validate it
     const [securityLevel, protocol] = deserializeWalletProtocol(Utils.toUTF8(fields[0]))

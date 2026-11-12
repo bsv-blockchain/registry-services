@@ -1,6 +1,6 @@
 import { BasketMapStorageManager } from './BasketMapStorageManager.js'
 import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
-import { Script, PushDrop, Utils } from '@bsv/sdk'
+import { LockingScript, Script, PushDrop, Utils } from '@bsv/sdk'
 import { BasketMapQuery, BasketMapRegistration } from './interfaces/BasketMapTypes.js'
 import docs from './docs/BasketMapLookupDocs.md.js'
 import { Db } from 'mongodb'
@@ -21,7 +21,7 @@ class BasketMapLookupService implements LookupService {
     if (topic !== 'tm_basketmap') return
 
     // Decode the BasketMap token fields from the Bitcoin outputScript
-    const { fields } = PushDrop.decode(lockingScript)
+    const { fields } = PushDrop.decode(new LockingScript().writeScript(lockingScript))
 
     // Parse record data correctly from field and validate it
     const basketID = Utils.toUTF8(fields[0])
